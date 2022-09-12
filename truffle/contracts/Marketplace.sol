@@ -3,12 +3,12 @@ pragma solidity >=0.4.22 <0.9.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+// import "@openzeppelin/contracts/interfaces/IERC165.sol";
+// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "./IERC4907.sol";
 
-contract Marketplace is ReentrancyGuard {
+contract Marketplace {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.AddressSet;
   using EnumerableSet for EnumerableSet.UintSet;
@@ -69,7 +69,7 @@ contract Marketplace is ReentrancyGuard {
       uint256 pricePerDay,
       uint256 startDateUNIX,
       uint256 endDateUNIX
-  ) public payable nonReentrant {
+  ) public payable {
       require(isRentableNFT(nftContract), "Contract is not an ERC4907");
       require(IERC721(nftContract).ownerOf(tokenId) == msg.sender, "Not owner of nft");
       require(msg.value == _listingFee, "Not enough ether for listing fee");
@@ -125,7 +125,7 @@ contract Marketplace is ReentrancyGuard {
         address nftContract,
         uint256 tokenId,
         uint64 expires
-    ) public payable nonReentrant {
+    ) public payable {
         Listing storage listing = _listingMap[nftContract][tokenId];
         require(listing.user == address(0) || block.timestamp > listing.expires, "NFT already rented");
         require(expires <= listing.endDateUNIX, "Rental period exceeds max date rentable");
@@ -152,7 +152,7 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // function to unlist your rental, refunding the user for any lost time
-    function unlistNFT(address nftContract, uint256 tokenId) public payable nonReentrant {
+    function unlistNFT(address nftContract, uint256 tokenId) public payable {
         Listing storage listing = _listingMap[nftContract][tokenId];
         require(listing.owner != address(0), "This NFT is not listed");
         require(listing.owner == msg.sender || _marketOwner == msg.sender , "Not approved to unlist NFT");
