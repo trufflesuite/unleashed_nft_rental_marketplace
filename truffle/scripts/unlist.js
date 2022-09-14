@@ -1,5 +1,5 @@
 const Marketplace = artifacts.require("Marketplace");
-const NFT_CONTRACT = "[NFT_CONTRACT]";
+const NFT_CONTRACT = "NFT_CONTRACT";
 const TOKEN_ID = 1;
 const PRICE = 1;
 const ERC721_ABI = [
@@ -39,7 +39,8 @@ const main = async (cb) => {
         const expires = await nftContract.methods.userExpires(TOKEN_ID).call();
         let value = (Math.floor((expires - Date.now()/1000)/60/60/24 + 1)) * PRICE;
         const owner = await nftContract.methods.ownerOf(TOKEN_ID).call();
-        let txn = await marketplace.unlistNFT(NFT_CONTRACT, TOKEN_ID, {from: owner, value: value});
+        let options = value < 0 ? {from: owner} : {from: owner, value: value};
+        let txn = await marketplace.unlistNFT(NFT_CONTRACT, TOKEN_ID, options);
         console.log(txn);
     } catch(err) {
         console.log(err);

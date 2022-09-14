@@ -17,7 +17,7 @@ const ERC721_ABI = [
         "type": "function"
     }
 ];
-const NFT_CONTRACT = "[NFT_CONTRACT]";
+const NFT_CONTRACT = "NFT_CONTRACT";
 const TOKEN_ID = 1;
 const PRICE = 1;
 const START = TODAY;

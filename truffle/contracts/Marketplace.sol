@@ -157,9 +157,13 @@ contract Marketplace is ReentrancyGuard {
         require(listing.owner != address(0), "This NFT is not listed");
         require(listing.owner == msg.sender || _marketOwner == msg.sender , "Not approved to unlist NFT");
         // fee to be returned to user if unlisted before rental period is up
-        uint256 refund = ((listing.expires - block.timestamp) / 60 / 60 / 24 + 1) * listing.pricePerDay;
-        require(msg.value >= refund, "Not enough ether to cover refund");
-        payable(listing.user).transfer(refund);
+        // nothing to refund if no renter
+        uint256 refund = 0;
+        if (listing.user != address(0)) {
+            refund = ((listing.expires - block.timestamp) / 60 / 60 / 24 + 1) * listing.pricePerDay;
+            require(msg.value >= refund, "Not enough ether to cover refund");
+            payable(listing.user).transfer(refund);
+        }
         // clean up data
         IERC4907(nftContract).setUser(tokenId, address(0), 0);
         EnumerableSet.remove(_nftContractTokensMap[nftContract], tokenId);
