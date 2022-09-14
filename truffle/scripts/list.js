@@ -21,7 +21,7 @@ const NFT_CONTRACT = "NFT_CONTRACT";
 const TOKEN_ID = 1;
 const PRICE = 1;
 const START = TODAY;
-const END = TOMORROW;
+const END = TODAY + 100;
 
 const main = async (cb) => {
     try {

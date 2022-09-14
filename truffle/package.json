@@ -8,6 +8,7 @@
     "@truffle/hdwallet-provider": "^2.0.10"
   },
   "devDependencies": {
+    "@ganache/console.log": "^0.2.0",
     "@openzeppelin/test-helpers": "^0.5.16"
   },
   "scripts": {

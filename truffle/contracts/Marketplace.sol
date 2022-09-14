@@ -6,12 +6,15 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./IERC4907.sol";
+import "./IResolver.sol";
 
-contract Marketplace is ReentrancyGuard {
+contract Marketplace is ReentrancyGuard, IResolver {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.AddressSet;
   using EnumerableSet for EnumerableSet.UintSet;
+  address private constant GELATO_OPS_GOERLI = address(0xc1C6805B857Bef1f412519C4A842522431aFed39);
   Counters.Counter private _nftsListed;
   address private _marketOwner;
   uint256 private _listingFee = .001 ether;
@@ -155,7 +158,8 @@ contract Marketplace is ReentrancyGuard {
     function unlistNFT(address nftContract, uint256 tokenId) public payable nonReentrant {
         Listing storage listing = _listingMap[nftContract][tokenId];
         require(listing.owner != address(0), "This NFT is not listed");
-        require(listing.owner == msg.sender || _marketOwner == msg.sender , "Not approved to unlist NFT");
+        require(listing.owner == msg.sender || _marketOwner == msg.sender || GELATO_OPS_GOERLI == msg.sender,
+            "Not approved to unlist NFT");
         // fee to be returned to user if unlisted before rental period is up
         // nothing to refund if no renter
         uint256 refund = 0;
@@ -202,6 +206,48 @@ contract Marketplace is ReentrancyGuard {
             }
         }
         return listings;
+    }
+
+    function removeUnavailableListings(Listing[] memory unavailableListings) public {
+        for (uint i = 0; i < unavailableListings.length; i++) {
+            unlistNFT(unavailableListings[i].nftContract, unavailableListings[i].tokenId);
+        }
+    }
+
+    function checker()
+        external
+        view 
+        override returns (bool canExec, bytes memory execPayload) {
+        uint256 totalListingCount = _nftsListed.current();
+        uint256 unavailableListingCount = 0;
+        Listing[] memory allListings = getAllListings();
+        for (uint i = 0; i < totalListingCount; i++) {
+            if (allListings[i].endDateUNIX > block.timestamp) {
+                unavailableListingCount++;
+            }
+        }
+
+        if (unavailableListingCount <= 0) {
+            return (false, bytes("No listings to unlist"));
+        }
+        if (tx.gasprice > 80 gwei) {
+            return (false, bytes("Gas price is greater than 80 gwei"));
+        }
+
+        Listing[] memory unavailableListings = new Listing[](unavailableListingCount);
+        uint256 unavailableListingsCount = 0;
+        for (uint i = 0; i < totalListingCount; i++) {
+            if (allListings[i].endDateUNIX > block.timestamp) {
+                unavailableListings[unavailableListingsCount] = allListings[i];
+                unavailableListingsCount++;
+            }
+        }
+
+        execPayload = abi.encodeWithSelector(
+            this.removeUnavailableListings.selector,
+            unavailableListings
+        );
+        return (true, execPayload);
     }
 
     function getListingFee() public view returns (uint256) {

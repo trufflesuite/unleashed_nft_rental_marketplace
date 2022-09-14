@@ -3,6 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 import "./ERC4907.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract RentableNft is ERC4907 {
   using Counters for Counters.Counter;

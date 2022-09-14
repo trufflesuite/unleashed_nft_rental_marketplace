@@ -1,4 +1,5 @@
 const RentableNft = artifacts.require("RentableNft");
+
 const main = async (cb) => {
     try {
         const nft = await RentableNft.deployed();
