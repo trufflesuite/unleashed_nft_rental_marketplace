@@ -11,6 +11,9 @@
     "react-scripts": "^4.0.3",
     "web3": "^1.7.5"
   },
+  "devDependencies": {
+    "sass": "^1.54.9"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
