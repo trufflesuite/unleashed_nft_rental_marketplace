@@ -7,31 +7,36 @@ function EthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const init = useCallback(
-    async artifact => {
-      if (artifact) {
+    async artifacts => {
+      if (artifacts) {
         const web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
         const accounts = await web3.eth.requestAccounts();
         const networkID = await web3.eth.net.getId();
-        const { abi } = artifact;
-        let address, contract;
+        const contracts = {};
         try {
-          address = artifact.networks[networkID].address;
-          contract = new web3.eth.Contract(abi, address);
+          for (const [contractName, artifact] of Object.entries(artifacts)) {
+            const address = artifact.networks[networkID].address;
+            const contract = new web3.eth.Contract(artifact.abi, address);
+            contracts[contractName] = contract;
+          }
         } catch (err) {
           console.error(err);
         }
         dispatch({
           type: actions.init,
-          data: { artifact, web3, accounts, networkID, contract }
+          data: { artifacts, web3, accounts, networkID, contracts }
         });
       }
     }, []);
 
   useEffect(() => {
-    const tryInit = async () => {
+    const tryInit = () => {
       try {
-        const artifact = require("../../contracts/SimpleStorage.json");
-        init(artifact);
+        const artifacts = {
+          RentableNft: require("../../contracts/RentableNft.json"),
+          Marketplace: require("../../contracts/Marketplace.json")
+        };
+        init(artifacts);
       } catch (err) {
         console.error(err);
       }
