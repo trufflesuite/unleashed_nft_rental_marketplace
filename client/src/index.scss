@@ -4,6 +4,16 @@
   justify-content: center;
 }
 
+@mixin max-size {
+  width: 100%;
+  height: 100%;
+}
+
+$truffle-teal: #3fe0c5;
+$primary-font: monospace;
+$primary-color: #000;
+$secondary-color: #777;
+
 html {
   font-size: 10px;
   font-family: sans-serif;
@@ -20,18 +30,224 @@ html {
 }
 
 #layout {
-  width: 100%;
-  height: 100%;
+  @include max-size;
   display: flex;
   $menu-width: 20%;
 
   .menu-container {
-    height: 100%;
     width: $menu-width;
+    min-width: 26rem;
+    height: 100%;
+
+    .logo-container {
+      @include flex-center;
+      padding: 2rem;
+
+      img {
+        width: 30%;
+        max-width: 7rem;
+      }
+    }
+
+    ul {
+      a {
+        text-decoration: none;
+
+        li {
+          padding: 2rem 3rem;
+          font-size: 2rem;
+          font-family: $primary-font;
+          color: $primary-color;
+
+          &:hover {
+            border: 2px solid $secondary-color;
+          }
+        }
+      }
+    }
   }
 
   .page-container {
-    height: 100%;
     width: 100% - $menu-width;
+    height: 100%;
+
+    .page {
+      @include max-size;
+      overflow-x: hidden;
+
+      h1 {
+        font-size: 4rem;
+        font-family: $primary-font;
+        margin: 2rem 0;
+      }
+    }
+  }
+}
+
+#mint {
+  input {
+    height: 3rem;
+    font-size: 2rem;
+    font-family: $primary-font;
+  }
+
+  button {
+    height: 3rem;
+    font-size: 2rem;
+    font-family: $primary-font;
+    margin-left: 1rem;
+    background-color: $truffle-teal;
+  }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+  gap: 5rem;
+  margin-bottom: 3rem;
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 36rem;
+
+    .media-container {
+      order: -3;
+
+      img,
+      video {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .progress-container {
+      order: -2;
+      @include flex-center;
+      position: relative;
+      margin-top: -1rem;
+
+      progress {
+        $fg-color: #eee;
+        $bg-color: $truffle-teal;
+        width: 100%;
+        height: 1.8rem;
+        background-color: $bg-color;
+
+        &::-webkit-progress-bar {
+          background-color: $bg-color;
+        }
+
+        &::-webkit-progress-value {
+          background-color: $fg-color;
+        }
+
+        &::-moz-progress-bar {
+          background-color: $fg-color;
+        }
+      }
+
+      p {
+        position: absolute;
+        font-size: 1.25rem;
+        font-family: $primary-font;
+      }
+    }
+
+    .name-desc-container {
+      order: -1;
+      font-family: $primary-font;
+
+      .toggle {
+        text-decoration: underline;
+        text-decoration-color: $truffle-teal;
+        text-decoration-thickness: 0.15rem;
+        cursor: pointer;
+      }
+    }
+
+    .table-container {
+      width: 100%;
+
+      table {
+        width: 100%;
+        border: 1px solid #000;
+
+        tbody {
+          tr {
+            td {
+              font-family: $primary-font;
+            }
+
+            &:nth-child(even) {
+              background-color: #eee;
+            }
+          }
+        }
+      }
+    }
+
+    .price-container {
+      @include flex-center;
+
+      h2 {
+        font-size: 1rem;
+        font-family: $primary-font;
+      }
+    }
+
+    .rent-container {
+      display: flex;
+      flex-direction: column;
+
+      h3,
+      button {
+        font-family: $primary-font;
+      }
+
+      button {
+        align-self: center;
+      }
+    }
+
+    .list-container {
+      display: flex;
+      flex-direction: column;
+
+      .form {
+        display: flex;
+
+        input {
+          width: 100%;
+          font-family: $primary-font;
+        }
+
+        select {
+          min-width: 8rem;
+          font-family: $primary-font;
+        }
+      }
+
+      button {
+        align-self: center;
+        font-family: $primary-font;
+        margin-top: 0.5rem;
+      }
+    }
+
+    .unlist-container {
+      @include flex-center;
+      flex-direction: column;
+
+      h3,
+      button {
+        font-family: $primary-font;
+      }
+
+      button {
+        margin-top: 0.5rem;
+      }
+    }
   }
 }
