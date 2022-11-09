@@ -1,6 +1,10 @@
 import { createContext, useContext, useCallback, useEffect, useState } from "react";
 import { useEth } from "../EthContext";
 import { getIpfsGatewayUri } from "../../utils";
+import { config as loadEnv } from 'dotenv';
+import { SDK, Auth } from '@infura/sdk';
+
+loadEnv();
 
 const MarketplaceContext = createContext();
 
@@ -98,27 +102,40 @@ function MarketplaceProvider({ children }) {
         const { address: nftContractAddress } = rentableNftContract.options;
         // TODO: Method below only checks `rentableNftContract`. 
         // Use infura nft api to find all user NFTs.
-        const mintEvents = await rentableNftContract.getPastEvents("Transfer", {
-          filter: {
-            from: "0x0000000000000000000000000000000000000000",
-            to: accounts[0]
-          },
-          fromBlock: 0
+        const auth = new Auth({
+          projectId: process.env.INFURA_PROJECT_ID,
+          secretId: process.env.INFURA_PROJECT_SECRET,
+          privateKey: process.env.WALLET_PRIVATE_KEY,
+          chainId: 5,
         });
-        const tokens = await Promise.all(
-          mintEvents.map(async mintEvent => {
-            const { tokenId } = mintEvent.returnValues;
-            const tokenUri = await rentableNftContract.methods.tokenURI(tokenId).call();
-            const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
-            return {
-              nftContractAddress,
-              tokenId,
-              tokenUri,
-              tokenUriRes,
-              listingData: listingsTransformed[nftContractAddress]?.[tokenId]
-            };
-          })
-        );
+        const sdk = new SDK(auth);
+        const myNFTs = await sdk.getNFTs({
+          publicAddress: process.env.WALLET_PUBLIC_ADDRESS,
+          includeMetadata: true
+        });
+        console.log('My NFTs: \n', myNFTs);
+
+        // const mintEvents = await rentableNftContract.getPastEvents("Transfer", {
+        //   filter: {
+        //     from: "0x0000000000000000000000000000000000000000",
+        //     to: accounts[0]
+        //   },
+        //   fromBlock: 0
+        // });
+        // const tokens = await Promise.all(
+        //   mintEvents.map(async mintEvent => {
+        //     const { tokenId } = mintEvent.returnValues;
+        //     const tokenUri = await rentableNftContract.methods.tokenURI(tokenId).call();
+        //     const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+        //     return {
+        //       nftContractAddress,
+        //       tokenId,
+        //       tokenUri,
+        //       tokenUriRes,
+        //       listingData: listingsTransformed[nftContractAddress]?.[tokenId]
+        //     };
+        //   })
+        // );
         setOwnedTokens(tokens);
       }
     },

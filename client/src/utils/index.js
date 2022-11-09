@@ -6,7 +6,7 @@ export const CANT_RENT_REASONS = {
 };
 
 // TODO: Use infura ipfs gateway
-export const IPFS_GATEWAY = "https://cloudflare-ipfs.com/ipfs/";
+export const IPFS_GATEWAY = "https://rental-marketplace.infura-ipfs.io";
 
 export function isIpfsUri(uri) {
   return uri.match(/^ipfs:\/\//);
