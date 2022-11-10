@@ -11,7 +11,7 @@ function InfuraProvider({ children }) {
   const { active } = env.infura.sdk;
   const [sdk, _setSdk] = useState(new SDK(auth));
   const {
-    state: { web3, artifacts },
+    state: { contracts },
   } = useEth();
 
   const getOwnedRentableNfts = async (publicAddress) => {
@@ -23,15 +23,8 @@ function InfuraProvider({ children }) {
     const filtered = [];
 
     for (const asset of assets) {
-      const contract = new web3.eth.Contract(
-        artifacts.RentableNft.abi,
-        asset.contract
-      );
-      try {
-        await contract.methods.userExpires(asset.tokenId).call();
+      if (await contracts.Marketplace.methods.isRentableNFT(asset.contract).call()) {
         filtered.push(asset);
-      } catch {
-        // Not rentable
       }
     }
 
