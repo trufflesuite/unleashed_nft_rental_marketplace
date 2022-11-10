@@ -39,7 +39,12 @@ function MarketplaceProvider({ children }) {
               artifacts.RentableNft.abi, nftContractAddress
             );
             const tokenUri = await nftContract.methods.tokenURI(tokenId).call();
-            const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+            let tokenUriRes;
+            try {
+              tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+            } catch (err) {
+              console.error("Bad uri");
+            }
             // const noUser = parseInt(user) !== 0;
             const pricePerDay = parseInt(pricePerDayStr);
             const startDateUnix = parseInt(startDateUnixStr);
@@ -130,7 +135,12 @@ function MarketplaceProvider({ children }) {
             mintEvents.map(async mintEvent => {
               const { tokenId } = mintEvent.returnValues;
               const tokenUri = await rentableNftContract.methods.tokenURI(tokenId).call();
-              const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+              let tokenUriRes;
+              try {
+                tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+              } catch (err) {
+                console.error("Bad uri");
+              }
               return {
                 nftContractAddress,
                 tokenId,

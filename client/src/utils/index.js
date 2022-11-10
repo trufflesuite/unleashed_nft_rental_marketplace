@@ -13,8 +13,10 @@ export function isIpfsUri(uri) {
 }
 
 export function getIpfsGatewayUri(uri) {
-  const ipfsAddress = uri.replace(/^ipfs:\/\//i, "");
-  return `${IPFS_GATEWAY}${ipfsAddress}`;
+  if (typeof uri === "string") {
+    const ipfsAddress = uri.replace(/^ipfs:\/\//i, "");
+    return `${IPFS_GATEWAY}${ipfsAddress}`;
+  }
 }
 
 export function roundNum(num, decimals = 0) {

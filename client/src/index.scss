@@ -120,6 +120,14 @@ html {
         width: 100%;
         height: auto;
       }
+
+      div {
+        @include flex-center;
+        height: 36rem;
+        font-family: $primary-font;
+        font-size: 2rem;
+        text-align: center;
+      }
     }
 
     .progress-container {
