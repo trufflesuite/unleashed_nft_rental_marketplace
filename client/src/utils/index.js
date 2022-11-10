@@ -1,3 +1,5 @@
+import env from "../env.json";
+
 export const CANT_RENT_REASONS = {
   LISTING_EXPIRED: 0,
   YOU_ARE_OWNER: 1,
@@ -5,8 +7,7 @@ export const CANT_RENT_REASONS = {
   SOMEONE_ELSE_IS_RENTING: 3,
 };
 
-// TODO: Use infura ipfs gateway
-export const IPFS_GATEWAY = "https://cloudflare-ipfs.com/ipfs/";
+export const IPFS_GATEWAY = `https://${env.infura.ipfs.subdomain}.infura-ipfs.io/ipfs/`;
 
 export function isIpfsUri(uri) {
   return uri.match(/^ipfs:\/\//);
@@ -47,8 +48,8 @@ export function trim(str, leftSize, rightSize, ellipsisLen = 3) {
   if (str.length <= leftSize + rightSize + ellipsisLen) {
     return str;
   } else {
-    return str.slice(0, leftSize) +
-      ".".repeat(ellipsisLen) +
-      str.slice(-rightSize);
+    return (
+      str.slice(0, leftSize) + ".".repeat(ellipsisLen) + str.slice(-rightSize)
+    );
   }
 }

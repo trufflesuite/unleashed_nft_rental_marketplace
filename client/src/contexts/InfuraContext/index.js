@@ -3,12 +3,12 @@ import { SDK, Auth } from "@infura/sdk";
 import { useEth } from "../EthContext";
 import env from "../../env.json";
 
-const auth = new Auth(env.infuraSdk.authOptions);
+const auth = new Auth(env.infura.sdk.authOptions);
 
 const InfuraContext = createContext();
 
 function InfuraProvider({ children }) {
-  const { active } = env.infuraSdk;
+  const { active } = env.infura.sdk;
   const [sdk, _setSdk] = useState(new SDK(auth));
   const {
     state: { web3, artifacts },
