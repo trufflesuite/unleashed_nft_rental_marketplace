@@ -1,21 +1,47 @@
 import { createContext, useContext, useState } from "react";
 import { SDK, Auth } from "@infura/sdk";
+import { useEth } from "../EthContext";
+import env from "../../env.json";
 
-const auth = new Auth({
-  projectId: "fac5ca24f1a74c67ac0ad40890ec2f70",
-  secretId: "9dc9819c9de44f27bfa3a117d459d64b",
-  privateKey:
-    "99ef73e2cfbcb061cc110c59c5253553f05803b286b490725d212c1b353cef89",
-  chainId: 5,
-});
+const auth = new Auth(env.infuraSdk.authOptions);
 
 const InfuraContext = createContext();
 
 function InfuraProvider({ children }) {
+  const { active } = env.infuraSdk;
   const [sdk, _setSdk] = useState(new SDK(auth));
+  const {
+    state: { web3, artifacts },
+  } = useEth();
+
+  const getOwnedRentableNfts = async (publicAddress) => {
+    const { assets } = await sdk.getNFTs({
+      publicAddress,
+      includeMetadata: true,
+    });
+
+    const filtered = [];
+
+    for (const asset of assets) {
+      const contract = new web3.eth.Contract(
+        artifacts.RentableNft.abi,
+        asset.contract
+      );
+      try {
+        await contract.methods.userExpires(asset.tokenId).call();
+        filtered.push(asset);
+      } catch {
+        // Not rentable
+      }
+    }
+
+    return filtered;
+  };
 
   return (
-    <InfuraContext.Provider value={{ sdk }}>{children}</InfuraContext.Provider>
+    <InfuraContext.Provider value={{ active, sdk, getOwnedRentableNfts }}>
+      {children}
+    </InfuraContext.Provider>
   );
 }
 

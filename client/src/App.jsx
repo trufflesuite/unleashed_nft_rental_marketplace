@@ -10,8 +10,8 @@ import { Rented } from "./rented";
 
 function App() {
   return (
-    <InfuraProvider>
-      <EthProvider>
+    <EthProvider>
+      <InfuraProvider>
         <MarketplaceProvider>
           <TimeProvider>
             <BrowserRouter>
@@ -26,8 +26,8 @@ function App() {
             </BrowserRouter>
           </TimeProvider>
         </MarketplaceProvider>
-      </EthProvider>
-    </InfuraProvider>
+      </InfuraProvider>
+    </EthProvider>
   );
 }
 

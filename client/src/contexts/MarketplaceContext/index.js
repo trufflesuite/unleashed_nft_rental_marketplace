@@ -1,5 +1,6 @@
 import { createContext, useContext, useCallback, useEffect, useState } from "react";
 import { useEth } from "../EthContext";
+import { useInfura } from "../InfuraContext";
 import { getIpfsGatewayUri } from "../../utils";
 
 const MarketplaceContext = createContext();
@@ -13,6 +14,7 @@ function MarketplaceProvider({ children }) {
     Marketplace: marketplaceContract,
     RentableNft: rentableNftContract,
   } = contracts || {};
+  const infura = useInfura();
 
   const updateListings = useCallback(
     async () => {
@@ -94,38 +96,59 @@ function MarketplaceProvider({ children }) {
 
   const updateOwnedTokens = useCallback(
     async () => {
-      if (rentableNftContract && listingsTransformed) {
-        const { address: nftContractAddress } = rentableNftContract.options;
-        // TODO: Method below only checks `rentableNftContract`. 
-        // Use infura nft api to find all user NFTs.
-        const mintEvents = await rentableNftContract.getPastEvents("Transfer", {
-          filter: {
-            from: "0x0000000000000000000000000000000000000000",
-            to: accounts[0]
-          },
-          fromBlock: 0
-        });
-        const tokens = await Promise.all(
-          mintEvents.map(async mintEvent => {
-            const { tokenId } = mintEvent.returnValues;
-            const tokenUri = await rentableNftContract.methods.tokenURI(tokenId).call();
-            const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
-            return {
-              nftContractAddress,
-              tokenId,
-              tokenUri,
-              tokenUriRes,
-              listingData: listingsTransformed[nftContractAddress]?.[tokenId]
-            };
-          })
-        );
-        setOwnedTokens(tokens);
+      if (infura.active) {
+        // Option 1 - Use infura nft sdk
+        if (accounts && listingsTransformed) {
+          const res = await infura.getOwnedRentableNfts(accounts[0]);
+          const tokens = await Promise.all(
+            res.map(async ele => {
+              return {
+                nftContractAddress: ele.contract,
+                tokenId: ele.tokenId,
+                tokenUriRes: ele.metadata,
+                listingData: listingsTransformed[ele.contract]?.[ele.tokenId]
+              }
+            })
+          )
+          setOwnedTokens(tokens);
+        }
+      } else {
+        // Option - 2 - Use contract events
+        // This is useful when using local network (ganache) or network otherwise unsupported
+        // docs.infura.io/infura/infura-custom-apis/nft-sdk/supported-networks
+        if (rentableNftContract && listingsTransformed) {
+          const { address: nftContractAddress } = rentableNftContract.options;
+          // This only checks `rentableNftContract`. 
+          const mintEvents = await rentableNftContract.getPastEvents("Transfer", {
+            filter: {
+              from: "0x0000000000000000000000000000000000000000",
+              to: accounts[0]
+            },
+            fromBlock: 0
+          });
+          const tokens = await Promise.all(
+            mintEvents.map(async mintEvent => {
+              const { tokenId } = mintEvent.returnValues;
+              const tokenUri = await rentableNftContract.methods.tokenURI(tokenId).call();
+              const tokenUriRes = await (await fetch(getIpfsGatewayUri(tokenUri))).json();
+              return {
+                nftContractAddress,
+                tokenId,
+                tokenUri,
+                tokenUriRes,
+                listingData: listingsTransformed[nftContractAddress]?.[tokenId]
+              };
+            })
+          );
+          setOwnedTokens(tokens);
+        }
       }
     },
     [
       rentableNftContract,
       listingsTransformed,
-      accounts
+      accounts,
+      infura.getOwnedRentableNfts
     ]);
   useEffect(() => void updateOwnedTokens(), [updateOwnedTokens]);
 

@@ -6,7 +6,7 @@ import { getReadableTime } from "../utils";
 const PROGRESS_MAX = 100;
 
 function OwnedCardContent({ data }) {
-  const { nftContractAddress, tokenId, tokenUri, listingData } = data;
+  const { nftContractAddress, tokenId, tokenUriRes, listingData } = data;
   const now = useTime();
   const [listed, setListed] = useState(undefined);
   const [rented, setRented] = useState(undefined);
@@ -50,7 +50,7 @@ function OwnedCardContent({ data }) {
         <Card.Table.Cell name="User" value={listingData?.user} valueTrim={{ leftSize: 8, rightSize: 6 }} />
         <Card.Table.Cell name="NFT contract address" value={nftContractAddress} valueTrim={{ leftSize: 8, rightSize: 6 }} />
         <Card.Table.Cell name="Token ID" value={tokenId} />
-        <Card.Table.Cell name="Token URI" value={tokenUri} valueTrim={{ leftSize: 11, rightSize: 6 }} />
+        <Card.Table.Cell name="Media URI" value={tokenUriRes.animation_url || tokenUriRes.image} valueTrim={{ leftSize: 11, rightSize: 6 }} />
       </Card.Table>
       <Card.List
         listed={listed}
