@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./IERC4907.sol";
+import "./IPUSHCommInterface.sol";
 
 contract Marketplace is ReentrancyGuard {
   using Counters for Counters.Counter;
@@ -164,6 +166,31 @@ contract Marketplace is ReentrancyGuard {
             require(msg.value >= refund, "Not enough ether to cover refund");
             payable(listing.user).transfer(refund);
         }
+
+        string memory body = string.concat("Your NFT rental from ", Strings.toHexString(nftContract), " with tokenId ", Strings.toString(tokenId), " has expired.");
+        if (msg.sender == listing.owner) {
+            string.concat(body, " Your rental NFT was unlisted by the owner, so you have been refunded ", Strings.toString(refund), " ETH.");
+        }
+
+        IPUSHCommInterface(address(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)).sendNotification(
+            address(0xA31618621805C9215B5Ade58EB09dBA8f32Bbdb8), // from channel - recommended to set channel via dApp and put it's value -> then once contract is deployed, go back and add the contract address as delegate for your channel
+            listing.user, // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send
+            bytes(
+                string(
+                    // We are passing identity here: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                    abi.encodePacked(
+                        "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                        "+", // segregator
+                        "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                        "+", // segregator
+                        "Your NFT rental has expired", // this is notification title
+                        "+", // segregator
+                        body // notification body
+                    )
+                )
+            )
+        );
+
         // clean up data
         IERC4907(nftContract).setUser(tokenId, address(0), 0);
         EnumerableSet.remove(_nftContractTokensMap[nftContract], tokenId);
